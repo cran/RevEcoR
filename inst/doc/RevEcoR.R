@@ -10,12 +10,9 @@ knit_hooks$set(htmlcap = function(before, options, envir) {
 set.seed(60823316) 
 
 ## ----eval=FALSE----------------------------------------------------------
-#  source("http://bioconductor.org/biocLite.R")
-#  biocLite(c("mmnet","KEGGREST","Biobase"))
+#  install.packages("RevEcoR")
 
 ## ----eval=FALSE----------------------------------------------------------
-#  install.packages("RevEcoR")
-#  ## or you can install the latest version from github
 #  if (!require(devtools)
 #    install.packages("devtools")
 #  devtools::install_github("yiluheihei/RevEcoR")
@@ -39,7 +36,7 @@ igraph::plot.igraph(buc.net, vertex.label=NA, vertex.size=5, edge.arrow.size=0.1
 annodir <- system.file("extdata/koanno.tab",package = "RevEcoR") 
 metabolic.data <- read.delim(annodir,stringsAsFactors=FALSE) 
 ##load the reference metabolic data 
-data(RefDbcache,package="mmnet") 
+data(RefDbcache) 
 g2 <- reconstructGsMN(metabolic.data, RefData = RefDbcache) 
 
 ## ----eval=TRUE, htmlcap="Figure 2The node colored with red represents the species' seed set",fig.lp="Figure 2", fig.width=8, fig.height=8----
@@ -73,6 +70,7 @@ data(gut_microbiome)
 ## ---- eval = FALSE, echo = TRUE------------------------------------------
 #  gut.nets <- lapply(gut_microbiome,reconstructGsMN)
 #  seed.sets <- lapply(gut.nets,getSeedSets)
+#  ## Since calculation is on large scale, species interactions prediction may take several hours
 #  gut.interactions <- caculateCooperationIndex(gut.nets)
 #  competition.index <- gut.interactions$competition.index
 #  complementarity.index <- gut.interactions$complementarity.index
@@ -93,8 +91,8 @@ occurrence.score <- read.delim(system.file("extdata/occurrence.tab",
 #  
 #  ## calculate the spearman correlation betwwen co-occurrence scores and two
 #  ## interactions indices
-#  competition.cor <- cor(competition.upper,occurance.upper,method="spearman")
-#  complematarity.cor <- cor(complementarity.upper,occurance.upper,method="spearman")
+#  competition.cor <- cor(competition.upper,occurrence.upper,method="spearman")
+#  complementarity.cor <- cor(complementarity.upper,occurrence.upper,method="spearman")
 #  
 #  ## permutation-based mantel test. Random permutation the co-occurance score
 #  ## 10000 times, P value is the fraction of correlations as high as or higher
@@ -107,7 +105,7 @@ occurrence.score <- read.delim(system.file("extdata/occurrence.tab",
 #    competition.null <- cor(competition.upper,null.stat)
 #    complementarity.null <- cor(complementarity.upper,null.stat)
 #    length(which(competition.null >= competition.cor)) ## 0 p.competition < 0.00001
-#    length(which(competition.null >= complementarity.cor)) ## 0 p.complementarity< 0.00001
+#    length(which(complementarity.null <= complementarity.cor)) ## 0 p.complementarity< 0.00001
 #  }
 
 ## ---- eval=TRUE----------------------------------------------------------

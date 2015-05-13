@@ -104,17 +104,27 @@ scale and for ralatively well-studied systems.
 ### Introduction
   
 This manual is a brief introduction to structure, funcitons and usage of 
-**RevEcoR** package. The **RevEcoR** package implementation a large-scale 
-reconstruction of metabolic environmnets using a cross-species analysis, 
-idenditifying the set of compounds with a graph-based algorithm mentioned in 
-[Borenstein *et al.*](#seedset) that each species extracts from its 
-environmnet where the metabolic network data is obtained from the Kyoto 
-Encyclopedia of Genes and Genomes (KEGG) datase with KEGG API.This algorithm 
-consists of several steps:
+**RevEcoR** package. The **RevEcoR** package implements the reverse ecology 
+framework. It can be used for reconstruction of metabolic environmnets using 
+a cross-species analysis, idenditifying the set of compounds and predicting the 
+species interactions on a large scale with a graph-based algorithm mentioned in
+[Borenstein *et al.*](#seedset). The reverse ecology framework which takes 
+advances of system biology and genomic metabolic modeling, aims to predict the 
+ecological traits of poorly studied microorganisms, their interactions with 
+other microorganisms, and the ecology of microbial communities from system-level
+analysis of complex biological networks. 
+
+Two softwares ([NetSeed](http://elbo.gs.washington.edu/software_netseed.html) 
+and [NetCooperate](http://elbo.gs.washington.edu/software_netcooperate.html)), 
+have developed by **Borenstein's** lab for studying the ecology of microorganisms.
+Howevever, neither of them supports metabolic network reconstruction of species,
+and both are limited in small scale analysis (two species). The **RevEcoR**
+package provides an interface to microbiome reverse ecology analysis on a large
+scale. The main features of this package consists of several steps:
   
 1. Downding metabolic networks data from KEGG database: all species metabolic 
 network data could be downloaded from the KEGG PATHWAY datase with the KEGG 
-REST API.
+REST API (application programming interface).
   
 2. Reconstruction metabolic networks of all species: a directed graph whose 
 nodes represent compounds and whose edges represent reactions linking 
@@ -132,32 +142,29 @@ SCCs.
 <a id="install"></a> 
 ### Installation
 
-Until **RevEcoR** is ready for CRAN or Bioconductor, you can install it 
-directly from GitHub using devtools.
+
   
-However, `install_github` can only install the dependencies that have been 
-released on CRAN. Three dependencencies for `ReveseEcologyR were released on 
-**Bioconductor**??`Biobase`, `KEGGREST` and `mmnet`. Users should install 
-these three packages manually first.
-  
-```{r,eval=FALSE} 
-source("http://bioconductor.org/biocLite.R") 
-biocLite(c("mmnet","KEGGREST","Biobase")) 
-```
-  
-Then install `RevEcoR` using devtools.
-  
+**RevEcoR** is free available on CRAN. You can install the latest released 
+version from CRAN as following:
+
 ```{r,eval=FALSE} 
 install.packages("RevEcoR") 
-## or you can install the latest version from github 
+```
+
+or the latest development version from github. To install packages from GitHub,
+you first need install the **devtools** package on your system with 
+`install.packages("devtools")`. Note that devtools sometimes needs some 
+extra non-R software on your system -- more specifically, an Rtools download for
+Windows or Xcode for OS X. There's more information about devtools
+[here](https://github.com/hadley/devtools).
+  
+```{r,eval=FALSE} 
 if (!require(devtools) 
   install.packages("devtools") 
 devtools::install_github("yiluheihei/RevEcoR") 
 ```
   
-You'll also need to make sure your machine is able to build packages from 
-source. See [Package Development Prerequisites](https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites)
-for the tools needed for your operating system.
+
   
 After installation, you can load **RevEcoR** into current workspace by typing 
 or pasting the following codes:
@@ -168,24 +175,21 @@ library(RevEcoR)
   
 <a id="metadata"></a> 
 ### Downloding the metabolic data of a specific organism
-  
-Metabolic data which contains reactions and metabolites information of each 
-organism. In total, 3139 species metabolic , covering all taxonomic groups was
-download, since July 2014.
-  
-  
-Futhermore, This package provides `getOrgMetabolicData` to download the 
-specific organism metabolic data, and return a list where each element 
-consists of three elements: reaction, substrate and product. It will help to 
-keep a downloaded metabolic data in local. It not only can help keeping the 
-data accurate and speed up the process of network reconstruction, but also 
-allows you to reuse the data for other purposes.
-  
-For `getOrgMetabolicData`, check for the existence of queried orgaism 
-metabolic data in the local database. If the data is not there, retrieve it 
-from KEGG and write into the local database. If not, return the data 
-immediately from the local database.Type `?getOrgMetabolicData` to see more 
-details.
+
+Both the Kyoto Encyclopedia of Genes and Genomes (KEGG) and Integrated Microbial
+Genomes database (IMG) [7] collect complete high-quality genome sequences and
+metagenome sequences with a comprehensive set of publicly available bacterial,
+archaeal, eukaryotic, and phage genomes, as well as engineered, environmental
+and host associated metagenome samples. All the sequences and functional
+annotation profile can be download directly. 
+
+The KEGG database provides a REST-style API compared with IMG database. 
+This package provides function `getOrgMetabolicData` to download the 
+specific organism metabolic data from KEGG database, and return a list where each 
+element consists of three elements: reaction, substrate and product. Data
+in IMG, we can only download it manually. In addition, users can annotate their
+private genomic data with KO terms on IMG systems or in their local machine to
+obtain the annotation profile. 
   
 ```{r eval=FALSE} 
 ## download sample metabolic data from remote KEGG database 
@@ -202,27 +206,16 @@ converted into ecological information. Metabolism linking  miroorgasnim  with
 the biochemical environmnet acrossing compound exchanges: import of exogenous 
 compounds and impact the composition of its environment via secretion of other
 compounds. Thus, metabolic network is the reflection of interation between 
-organisms and its environment.
+organisms and their environment.
   
 Graph-based representation of metabolic reactions where nodes represent 
 compounds and edges represent reactions is a  common tool in analyzing and 
 studing metabolic networks. A directed edge from node a to b indicates that 
 compound a is a substrate in some reaction that produces compound b.
   
-`reconstructGsMN` could be used to reconstruction the metabolicnetwork of a 
-specific organism.
+Once the metabolic data is obtained, `reconstructGsMN` could be used to
+reconstruction the metabolic network of a specific organism.
   
-KEGG organism database is a large scale resources and is widly used to 
-reconsturct genome scale metabolic network(GsMN). However, large human 
-microbiome data is generated with the development of Next-generation 
-Sequencing. Spcies detected in the human microbiome is in booming and more 
-non-cultured microbes has been detected. This microbes is not necessarily 
-contains in KEGG.
-  
-Integrated microbial genomes (IMG) is a widely resouce and analysis tool for 
-human microbiome. For metagenomic microbiome data, uses can anaysis in IMG and
-obtain the genomic information of species in the microbiome as well as the 
-KEGG orthology (KO) functional annotation profile.
   
 ```{r eval=TRUE, htmlcap="Figure 1 Reconstruction metabolic network of *Buchnera aphidicola APS*", fig.lp="Figure 1", fig.width=8, fig.height=8} 
 ## species in KEGG 
@@ -234,7 +227,7 @@ igraph::plot.igraph(buc.net, vertex.label=NA, vertex.size=5, edge.arrow.size=0.1
 annodir <- system.file("extdata/koanno.tab",package = "RevEcoR") 
 metabolic.data <- read.delim(annodir,stringsAsFactors=FALSE) 
 ##load the reference metabolic data 
-data(RefDbcache,package="mmnet") 
+data(RefDbcache) 
 g2 <- reconstructGsMN(metabolic.data, RefData = RefDbcache) 
 ```
 
@@ -327,11 +320,12 @@ data(gut_microbiome)
 ```
 
 Then, it was used to reconstuct the metabolic network, predict the seed set, 
-and finally predict the pairs of interactions  between different species:
+and finally predict the pairs of interactions between different species:
   
 ```{r, eval = FALSE, echo = TRUE}
 gut.nets <- lapply(gut_microbiome,reconstructGsMN)
 seed.sets <- lapply(gut.nets,getSeedSets)
+## Since calculation is on large scale, species interactions prediction may take several hours
 gut.interactions <- caculateCooperationIndex(gut.nets)
 competition.index <- gut.interactions$competition.index
 complementarity.index <- gut.interactions$complementarity.index
@@ -359,7 +353,7 @@ occurrence.score <- read.delim(system.file("extdata/occurrence.tab",
 The Jaccard index measures similarity between finite sample sets, and is defined
 as the size of the intersection divided by the size of the union of the sample 
 sets. Thus, co-occurrence scores are generally symmetric whereas competition 
-index or complementarity index are not. 
+index or complementarity index are not according to their definitions. 
 
 A symmetric version of two interaction index was gnerated by replacing each 
 element of the interaction indices with the mean of each value and that 
@@ -382,8 +376,8 @@ complementarity.upper <- complementarity.index[upper.tri(complementarity.index)]
 
 ## calculate the spearman correlation betwwen co-occurrence scores and two 
 ## interactions indices
-competition.cor <- cor(competition.upper,occurance.upper,method="spearman")
-complematarity.cor <- cor(complementarity.upper,occurance.upper,method="spearman")
+competition.cor <- cor(competition.upper,occurrence.upper,method="spearman")
+complementarity.cor <- cor(complementarity.upper,occurrence.upper,method="spearman")
 
 ## permutation-based mantel test. Random permutation the co-occurance score 
 ## 10000 times, P value is the fraction of correlations as high as or higher 
@@ -396,11 +390,11 @@ if (require(magrittr)){
   competition.null <- cor(competition.upper,null.stat)
   complementarity.null <- cor(complementarity.upper,null.stat)
   length(which(competition.null >= competition.cor)) ## 0 p.competition < 0.00001
-  length(which(competition.null >= complementarity.cor)) ## 0 p.complementarity< 0.00001
+  length(which(complementarity.null <= complementarity.cor)) ## 0 p.complementarity< 0.00001
 }
 ```
  
-We found that competition index is significant positively correlated with co-occurrence (cor = 0.165, P < 10-4, Mantel correlation test), whereas the complementarity index is significant negatively correlated with co-occurrence (cor = -0.259, P < 10-4, Mantel correlation test). This suggests that competition is liked to be the key factor
+We found that competition index is significant positively correlated with co-occurrence (cor = 0.261, P < 10-4, Mantel correlation test), whereas the complementarity index is significant negatively correlated with co-occurrence (cor = -0.259, P < 10-4, Mantel correlation test). This suggests that competition is liked to be the key factor
 to promote the assembly of gut microorganisms
 
 <a id="session"></a> 

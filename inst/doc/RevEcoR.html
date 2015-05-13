@@ -111,18 +111,28 @@ scale and for ralatively well-studied systems.</p>
 <h3>Introduction</h3>
 
 <p>This manual is a brief introduction to structure, funcitons and usage of 
-<strong>RevEcoR</strong> package. The <strong>RevEcoR</strong> package implementation a large-scale 
-reconstruction of metabolic environmnets using a cross-species analysis, 
-idenditifying the set of compounds with a graph-based algorithm mentioned in 
-<a href="#seedset">Borenstein <em>et al.</em></a> that each species extracts from its 
-environmnet where the metabolic network data is obtained from the Kyoto 
-Encyclopedia of Genes and Genomes (KEGG) datase with KEGG API.This algorithm 
-consists of several steps:</p>
+<strong>RevEcoR</strong> package. The <strong>RevEcoR</strong> package implements the reverse ecology 
+framework. It can be used for reconstruction of metabolic environmnets using 
+a cross-species analysis, idenditifying the set of compounds and predicting the 
+species interactions on a large scale with a graph-based algorithm mentioned in
+<a href="#seedset">Borenstein <em>et al.</em></a>. The reverse ecology framework which takes 
+advances of system biology and genomic metabolic modeling, aims to predict the 
+ecological traits of poorly studied microorganisms, their interactions with 
+other microorganisms, and the ecology of microbial communities from system-level
+analysis of complex biological networks. </p>
+
+<p>Two softwares (<a href="http://elbo.gs.washington.edu/software_netseed.html">NetSeed</a> 
+and <a href="http://elbo.gs.washington.edu/software_netcooperate.html">NetCooperate</a>), 
+have developed by <strong>Borenstein&#39;s</strong> lab for studying the ecology of microorganisms.
+Howevever, neither of them supports metabolic network reconstruction of species,
+and both are limited in small scale analysis (two species). The <strong>RevEcoR</strong>
+package provides an interface to microbiome reverse ecology analysis on a large
+scale. The main features of this package consists of several steps:</p>
 
 <ol>
 <li><p>Downding metabolic networks data from KEGG database: all species metabolic 
 network data could be downloaded from the KEGG PATHWAY datase with the KEGG 
-REST API.</p></li>
+REST API (application programming interface).</p></li>
 <li><p>Reconstruction metabolic networks of all species: a directed graph whose 
 nodes represent compounds and whose edges represent reactions linking 
 substrates to products.</p></li>
@@ -139,30 +149,23 @@ SCCs.</p></li>
 
 <h3>Installation</h3>
 
-<p>Until <strong>RevEcoR</strong> is ready for CRAN or Bioconductor, you can install it 
-directly from GitHub using devtools.</p>
-
-<p>However, <code>install_github</code> can only install the dependencies that have been 
-released on CRAN. Three dependencencies for <code>ReveseEcologyR were released on 
-**Bioconductor**??</code>Biobase<code>,</code>KEGGREST<code>and</code>mmnet. Users should install 
-these three packages manually first.</p>
-
-<pre><code class="r">source(&quot;http://bioconductor.org/biocLite.R&quot;) 
-biocLite(c(&quot;mmnet&quot;,&quot;KEGGREST&quot;,&quot;Biobase&quot;)) 
-</code></pre>
-
-<p>Then install <code>RevEcoR</code> using devtools.</p>
+<p><strong>RevEcoR</strong> is free available on CRAN. You can install the latest released 
+version from CRAN as following:</p>
 
 <pre><code class="r">install.packages(&quot;RevEcoR&quot;) 
-## or you can install the latest version from github 
-if (!require(devtools) 
+</code></pre>
+
+<p>or the latest development version from github. To install packages from GitHub,
+you first need install the <strong>devtools</strong> package on your system with 
+<code>install.packages(&quot;devtools&quot;)</code>. Note that devtools sometimes needs some 
+extra non-R software on your system &ndash; more specifically, an Rtools download for
+Windows or Xcode for OS X. There&#39;s more information about devtools
+<a href="https://github.com/hadley/devtools">here</a>.</p>
+
+<pre><code class="r">if (!require(devtools) 
   install.packages(&quot;devtools&quot;) 
 devtools::install_github(&quot;yiluheihei/RevEcoR&quot;) 
 </code></pre>
-
-<p>You&#39;ll also need to make sure your machine is able to build packages from 
-source. See <a href="https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites">Package Development Prerequisites</a>
-for the tools needed for your operating system.</p>
 
 <p>After installation, you can load <strong>RevEcoR</strong> into current workspace by typing 
 or pasting the following codes:</p>
@@ -174,22 +177,20 @@ or pasting the following codes:</p>
 
 <h3>Downloding the metabolic data of a specific organism</h3>
 
-<p>Metabolic data which contains reactions and metabolites information of each 
-organism. In total, 3139 species metabolic , covering all taxonomic groups was
-download, since July 2014.</p>
+<p>Both the Kyoto Encyclopedia of Genes and Genomes (KEGG) and Integrated Microbial
+Genomes database (IMG) [7] collect complete high-quality genome sequences and
+metagenome sequences with a comprehensive set of publicly available bacterial,
+archaeal, eukaryotic, and phage genomes, as well as engineered, environmental
+and host associated metagenome samples. All the sequences and functional
+annotation profile can be download directly. </p>
 
-<p>Futhermore, This package provides <code>getOrgMetabolicData</code> to download the 
-specific organism metabolic data, and return a list where each element 
-consists of three elements: reaction, substrate and product. It will help to 
-keep a downloaded metabolic data in local. It not only can help keeping the 
-data accurate and speed up the process of network reconstruction, but also 
-allows you to reuse the data for other purposes.</p>
-
-<p>For <code>getOrgMetabolicData</code>, check for the existence of queried orgaism 
-metabolic data in the local database. If the data is not there, retrieve it 
-from KEGG and write into the local database. If not, return the data 
-immediately from the local database.Type <code>?getOrgMetabolicData</code> to see more 
-details.</p>
+<p>The KEGG database provides a REST-style API compared with IMG database. 
+This package provides function <code>getOrgMetabolicData</code> to download the 
+specific organism metabolic data from KEGG database, and return a list where each 
+element consists of three elements: reaction, substrate and product. Data
+in IMG, we can only download it manually. In addition, users can annotate their
+private genomic data with KO terms on IMG systems or in their local machine to
+obtain the annotation profile. </p>
 
 <pre><code class="r">## download sample metabolic data from remote KEGG database 
 buc &lt;- getOrgMetabolicData(&quot;buc&quot;) 
@@ -206,27 +207,15 @@ converted into ecological information. Metabolism linking  miroorgasnim  with
 the biochemical environmnet acrossing compound exchanges: import of exogenous 
 compounds and impact the composition of its environment via secretion of other
 compounds. Thus, metabolic network is the reflection of interation between 
-organisms and its environment.</p>
+organisms and their environment.</p>
 
 <p>Graph-based representation of metabolic reactions where nodes represent 
 compounds and edges represent reactions is a  common tool in analyzing and 
 studing metabolic networks. A directed edge from node a to b indicates that 
 compound a is a substrate in some reaction that produces compound b.</p>
 
-<p><code>reconstructGsMN</code> could be used to reconstruction the metabolicnetwork of a 
-specific organism.</p>
-
-<p>KEGG organism database is a large scale resources and is widly used to 
-reconsturct genome scale metabolic network(GsMN). However, large human 
-microbiome data is generated with the development of Next-generation 
-Sequencing. Spcies detected in the human microbiome is in booming and more 
-non-cultured microbes has been detected. This microbes is not necessarily 
-contains in KEGG.</p>
-
-<p>Integrated microbial genomes (IMG) is a widely resouce and analysis tool for 
-human microbiome. For metagenomic microbiome data, uses can anaysis in IMG and
-obtain the genomic information of species in the microbiome as well as the 
-KEGG orthology (KO) functional annotation profile.</p>
+<p>Once the metabolic data is obtained, <code>reconstructGsMN</code> could be used to
+reconstruction the metabolic network of a specific organism.</p>
 
 <pre><code class="r">## species in KEGG 
 buc.net &lt;- reconstructGsMN(kegg_buc, RefData = NULL) 
@@ -246,7 +235,7 @@ igraph::print.igraph(buc.net)
 annodir &lt;- system.file(&quot;extdata/koanno.tab&quot;,package = &quot;RevEcoR&quot;) 
 metabolic.data &lt;- read.delim(annodir,stringsAsFactors=FALSE) 
 ##load the reference metabolic data 
-data(RefDbcache,package=&quot;mmnet&quot;) 
+data(RefDbcache) 
 g2 &lt;- reconstructGsMN(metabolic.data, RefData = RefDbcache) 
 </code></pre>
 
@@ -385,10 +374,11 @@ subdirectory <em>data</em> of RevEcoR. We can load it as the following code:</p>
 </code></pre>
 
 <p>Then, it was used to reconstuct the metabolic network, predict the seed set, 
-and finally predict the pairs of interactions  between different species:</p>
+and finally predict the pairs of interactions between different species:</p>
 
 <pre><code class="r">gut.nets &lt;- lapply(gut_microbiome,reconstructGsMN)
 seed.sets &lt;- lapply(gut.nets,getSeedSets)
+## Since calculation is on large scale, species interactions prediction may take several hours
 gut.interactions &lt;- caculateCooperationIndex(gut.nets)
 competition.index &lt;- gut.interactions$competition.index
 complementarity.index &lt;- gut.interactions$complementarity.index
@@ -415,7 +405,7 @@ index.</p>
 <p>The Jaccard index measures similarity between finite sample sets, and is defined
 as the size of the intersection divided by the size of the union of the sample 
 sets. Thus, co-occurrence scores are generally symmetric whereas competition 
-index or complementarity index are not. </p>
+index or complementarity index are not according to their definitions. </p>
 
 <p>A symmetric version of two interaction index was gnerated by replacing each 
 element of the interaction indices with the mean of each value and that 
@@ -437,8 +427,8 @@ complementarity.upper &lt;- complementarity.index[upper.tri(complementarity.inde
 
 ## calculate the spearman correlation betwwen co-occurrence scores and two 
 ## interactions indices
-competition.cor &lt;- cor(competition.upper,occurance.upper,method=&quot;spearman&quot;)
-complematarity.cor &lt;- cor(complementarity.upper,occurance.upper,method=&quot;spearman&quot;)
+competition.cor &lt;- cor(competition.upper,occurrence.upper,method=&quot;spearman&quot;)
+complementarity.cor &lt;- cor(complementarity.upper,occurrence.upper,method=&quot;spearman&quot;)
 
 ## permutation-based mantel test. Random permutation the co-occurance score 
 ## 10000 times, P value is the fraction of correlations as high as or higher 
@@ -451,11 +441,11 @@ if (require(magrittr)){
   competition.null &lt;- cor(competition.upper,null.stat)
   complementarity.null &lt;- cor(complementarity.upper,null.stat)
   length(which(competition.null &gt;= competition.cor)) ## 0 p.competition &lt; 0.00001
-  length(which(competition.null &gt;= complementarity.cor)) ## 0 p.complementarity&lt; 0.00001
+  length(which(complementarity.null &lt;= complementarity.cor)) ## 0 p.complementarity&lt; 0.00001
 }
 </code></pre>
 
-<p>We found that competition index is significant positively correlated with co-occurrence (cor = 0.165, P &lt; 10-4, Mantel correlation test), whereas the complementarity index is significant negatively correlated with co-occurrence (cor = -0.259, P &lt; 10-4, Mantel correlation test). This suggests that competition is liked to be the key factor
+<p>We found that competition index is significant positively correlated with co-occurrence (cor = 0.261, P &lt; 10-4, Mantel correlation test), whereas the complementarity index is significant negatively correlated with co-occurrence (cor = -0.259, P &lt; 10-4, Mantel correlation test). This suggests that competition is liked to be the key factor
 to promote the assembly of gut microorganisms</p>
 
 <p><a id="session"></a> </p>
@@ -482,23 +472,14 @@ to promote the assembly of gut microorganisms</p>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] RevEcoR_0.99.1 knitr_1.10.5  
+## [1] RevEcoR_0.99.2 knitr_1.10.5  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] flexmix_2.3-12      igraph_0.7.1        Rcpp_0.11.5        
-##  [4] XVector_0.6.0       magrittr_1.5        MASS_7.3-35        
-##  [7] BiocGenerics_0.12.0 zlibbioc_1.12.0     IRanges_2.0.0      
-## [10] munsell_0.4.2       colorspace_1.2-6    lattice_0.20-31    
-## [13] stringr_0.6.2       httr_0.5            plyr_1.8.1         
-## [16] tools_3.2.0         nnet_7.3-9          parallel_3.2.0     
-## [19] grid_3.2.0          gtable_0.1.2        Biobase_2.26.0     
-## [22] biom_0.3.13         png_0.1-7           modeltools_0.2-21  
-## [25] gtools_3.4.1        digest_0.6.4        mmnet_1.4.0        
-## [28] RJSONIO_1.3-0       Matrix_1.2-0        reshape2_1.4       
-## [31] ggplot2_1.0.0       formatR_1.0         S4Vectors_0.4.0    
-## [34] RCurl_1.95-4.3      KEGGREST_1.6.0      evaluate_0.5.5     
-## [37] scales_0.2.4        Biostrings_2.34.0   stats4_3.2.0       
-## [40] XML_3.98-1.1        proto_0.3-10
+##  [1] plyr_1.8.1         Matrix_1.2-0       magrittr_1.5      
+##  [4] formatR_1.0        tools_3.2.0        igraph_0.7.1      
+##  [7] Rcpp_0.11.5        stringi_0.4-1      grid_3.2.0        
+## [10] stringr_1.0.0.9000 gtools_3.5.0       XML_3.98-1.1      
+## [13] lattice_0.20-31    evaluate_0.5.5
 </code></pre>
 
 <p><a id="ref"></a> </p>
